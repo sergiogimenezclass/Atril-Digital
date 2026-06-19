@@ -1,5 +1,5 @@
 // Configurar worker de PDF.js localmente
-pdfjsLib.GlobalWorkerOptions.workerSrc = 'js/libs/pdf.worker.min.js';
+pdfjsLib.GlobalWorkerOptions.workerSrc = '/static/js/libs/pdf.worker.min.js';
 
 let pdfDoc = null;
 let currentNumPage = 1;

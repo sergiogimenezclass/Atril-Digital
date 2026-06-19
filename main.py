@@ -4,12 +4,18 @@ import socket
 import datetime
 import ipaddress
 import requests
+import mimetypes
 from typing import List
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, UploadFile, File
 from fastapi.responses import JSONResponse, FileResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 import uvicorn
+
+# Inicializar y corregir posibles mapeos de tipos MIME corruptos en el sistema operativo host
+mimetypes.init()
+mimetypes.add_type("application/javascript", ".js")
+mimetypes.add_type("application/javascript", ".mjs")
 
 # Asegurar directorios requeridos al importar (para StaticFiles)
 os.makedirs("uploads", exist_ok=True)
@@ -154,39 +160,106 @@ def download_pdfjs(static_dir="static"):
 
 # --- Generación de una partitura PDF de muestra ---
 def generate_sample_pdf(filepath: str):
-    """Genera un PDF de muestra de 3 páginas de forma programática."""
-    pdf_content = (
-        b"%PDF-1.4\n"
-        b"1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n"
-        b"2 0 obj\n<< /Type /Pages /Kids [3 0 R 4 0 R 5 0 R] /Count 3 >>\nendobj\n"
-        # Página 1
-        b"3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 6 0 R >> >> /Contents 7 0 R >>\nendobj\n"
-        # Página 2
-        b"4 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 6 0 R >> >> /Contents 8 0 R >>\nendobj\n"
-        # Página 3
-        b"5 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 6 0 R >> >> /Contents 9 0 R >>\nendobj\n"
-        # Fuente
-        b"6 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>\nendobj\n"
-        # Contenido Página 1
-        b"7 0 obj\n<< /Length 120 >>\nstream\n"
-        b"BT\n/F1 28 Tf\n80 750 Td\n(UNISONO - ATRIL DIGITAL) Tj\n/F1 16 Tf\n0 -60 Td\n(Esta es la Pagina 1 de la partitura de muestra.) Tj\n0 -30 Td\n(Preparados para la introduccion en Do Mayor...) Tj\nET\n"
-        b"endstream\nendobj\n"
-        # Contenido Página 2
-        b"8 0 obj\n<< /Length 110 >>\nstream\n"
-        b"BT\n/F1 28 Tf\n80 750 Td\n(UNISONO - SEGUNDA PAGINA) Tj\n/F1 16 Tf\n0 -60 Td\n(Esta es la Pagina 2 de la partitura.) Tj\n0 -30 Td\n(Tema principal y estrofas del coro...) Tj\nET\n"
-        b"endstream\nendobj\n"
-        # Contenido Página 3
-        b"9 0 obj\n<< /Length 100 >>\nstream\n"
-        b"BT\n/F1 28 Tf\n80 750 Td\n(UNISONO - CORO Y CODA) Tj\n/F1 16 Tf\n0 -60 Td\n(Esta es la Pagina 3 de la partitura.) Tj\n0 -30 Td\n(Crescendo final y cierre...) Tj\nET\n"
-        b"endstream\nendobj\n"
-        b"xref\n0 10\n0000000000 65535 f\n"
-        b"0000000009 00000 n\n0000000056 00000 n\n0000000124 00000 n\n0000000244 00000 n\n0000000364 00000 n\n0000000484 00000 n\n0000000562 00000 n\n0000000732 00000 n\n0000000892 00000 n\n"
-        b"trailer\n<< /Size 10 /Root 1 0 R >>\nstartxref\n1042\n%%EOF\n"
+    """Genera un PDF de muestra de 3 páginas con offsets de bytes calculados dinámicamente."""
+    objects = []
+    
+    # Objeto 1: Catalog
+    objects.append(b"<< /Type /Catalog /Pages 2 0 R >>")
+    # Objeto 2: Pages Catalog
+    objects.append(b"<< /Type /Pages /Kids [3 0 R 4 0 R 5 0 R] /Count 3 >>")
+    
+    # Contenidos de streams
+    stream1 = (
+        b"BT\n"
+        b"/F1 24 Tf\n"
+        b"50 750 Td\n"
+        b"(UNISONO - ATRIL DIGITAL) Tj\n"
+        b"/F1 16 Tf\n"
+        b"0 -40 Td\n"
+        b"(Esta es la Pagina 1 de la partitura de muestra.) Tj\n"
+        b"0 -35 Td\n"
+        b"(La sincronizacion en tiempo real esta activa.) Tj\n"
+        b"0 -30 Td\n"
+        b"(El director puede pasar las paginas.) Tj\n"
+        b"ET"
     )
+    
+    stream2 = (
+        b"BT\n"
+        b"/F1 24 Tf\n"
+        b"50 750 Td\n"
+        b"(UNISONO - SEGUNDA PAGINA) Tj\n"
+        b"/F1 16 Tf\n"
+        b"0 -40 Td\n"
+        b"(Esta es la Pagina 2 de la partitura.) Tj\n"
+        b"0 -35 Td\n"
+        b"(Los musicos ven esta pagina en sus dispositivos.) Tj\n"
+        b"0 -30 Td\n"
+        b"(La pantalla se mantendra encendida.) Tj\n"
+        b"ET"
+    )
+    
+    stream3 = (
+        b"BT\n"
+        b"/F1 24 Tf\n"
+        b"50 750 Td\n"
+        b"(UNISONO - TERCERA PAGINA) Tj\n"
+        b"/F1 16 Tf\n"
+        b"0 -40 Td\n"
+        b"(Esta es la Pagina 3: Coda final y Cierre.) Tj\n"
+        b"0 -35 Td\n"
+        b"(El proyecto funciona de manera 100% local.) Tj\n"
+        b"0 -30 Td\n"
+        b"(Fin de la partitura de muestra.) Tj\n"
+        b"ET"
+    )
+    
+    # Objeto 3, 4, 5: Pages
+    objects.append(b"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 6 0 R >> >> /Contents 7 0 R >>")
+    objects.append(b"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 6 0 R >> >> /Contents 8 0 R >>")
+    objects.append(b"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 6 0 R >> >> /Contents 9 0 R >>")
+    
+    # Objeto 6: Font
+    objects.append(b"<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>")
+    
+    # Ensamblar contenido del PDF y calcular offsets de bytes exactos
+    pdf_bytes = b"%PDF-1.4\n"
+    offsets = {}
+    compiled_objs = {}
+    
+    # Objetos del 1 al 6 (diccionarios estándar)
+    for i in range(1, 7):
+        compiled_objs[i] = f"{i} 0 obj\n".encode('ascii') + objects[i-1] + b"\nendobj\n"
+        
+    # Objetos 7, 8, 9 (objetos de stream con longitud calculada)
+    for i, stream_content in enumerate([stream1, stream2, stream3], start=7):
+        length = len(stream_content)
+        compiled_objs[i] = (
+            f"{i} 0 obj\n<< /Length {length} >>\nstream\n".encode('ascii') 
+            + stream_content 
+            + b"\nendstream\nendobj\n"
+        )
+        
+    # Unir todos los objetos y guardar sus posiciones
+    for i in range(1, 10):
+        offsets[i] = len(pdf_bytes)
+        pdf_bytes += compiled_objs[i]
+        
+    # Generar tabla xref
+    startxref = len(pdf_bytes)
+    pdf_bytes += b"xref\n0 10\n0000000000 65535 f\n"
+    for i in range(1, 10):
+        pdf_bytes += f"{offsets[i]:010d} 00000 n\n".encode('ascii')
+        
+    # Generar trailer y startxref
+    pdf_bytes += b"trailer\n<< /Size 10 /Root 1 0 R >>\n"
+    pdf_bytes += b"startxref\n"
+    pdf_bytes += f"{startxref}\n".encode('ascii')
+    pdf_bytes += b"%%EOF\n"
     
     os.makedirs(os.path.dirname(filepath), exist_ok=True)
     with open(filepath, "wb") as f:
-        f.write(pdf_content)
+        f.write(pdf_bytes)
     print(f"Archivo de muestra PDF creado en {filepath}")
 
 # --- Manejador de conexiones WebSocket ---
