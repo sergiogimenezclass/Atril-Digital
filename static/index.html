@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Unísono - Atril Digital</title>
+    <link rel="stylesheet" href="css/style.css">
+    <meta name="theme-color" content="#0b0d13">
+</head>
+<body>
+
+    <div class="musician-container">
+        <!-- Overlay táctil para mostrar/ocultar el encabezado -->
+        <div class="interaction-overlay" id="interaction-overlay"></div>
+
+        <!-- Encabezado flotante (auto-ocultable) -->
+        <header class="floating-header glass" id="floating-header">
+            <div class="header-info">
+                <h1>Unísono</h1>
+                <span class="status-dot disconnected" id="connection-dot"></span>
+                <span class="document-name" id="doc-name">Ningún documento activo</span>
+            </div>
+            
+            <div class="header-controls">
+                <div class="toggle-container" id="wake-lock-toggle-container">
+                    <span class="toggle-label" id="wake-lock-label">Pantalla Activa</span>
+                    <label class="switch">
+                        <input type="checkbox" id="wake-lock-checkbox">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="page-indicator" id="page-indicator">Pág. -</div>
+            </div>
+        </header>
+
+        <!-- Contenedor del Canvas de PDF -->
+        <div class="pdf-viewer-wrapper" id="pdf-wrapper">
+            <canvas id="pdf-canvas"></canvas>
+        </div>
+
+        <!-- Overlay de Estado Inicial / Reconexión -->
+        <div class="status-overlay" id="status-overlay">
+            <div class="status-card glass">
+                <div class="spinner" id="status-spinner" style="margin: 0 auto 20px auto;"></div>
+                <h2 id="status-title">Conectando con Unísono...</h2>
+                <p id="status-message">Asegúrate de estar conectado a la red local del director.</p>
+                <button id="btn-reconnect" style="display: none;">Reconectar manualmente</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cargar PDF.js localmente -->
+    <script src="js/libs/pdf.min.js"></script>
+    <!-- Cargar aplicación del músico -->
+    <script src="js/app.js"></script>
+</body>
+</html>

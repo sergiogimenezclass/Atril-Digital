@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unísono - Panel del Director</title>
+    <link rel="stylesheet" href="css/style.css">
+    <meta name="theme-color" content="#0b0d13">
+</head>
+<body>
+
+    <div class="director-container">
+        <!-- Encabezado del Director -->
+        <header class="director-header">
+            <div class="director-title-wrapper">
+                <div class="logo-icon">♩</div>
+                <h1>Unísono <span style="font-size: 0.8rem; font-weight: normal; color: var(--secondary);">Director</span></h1>
+            </div>
+            
+            <div class="director-meta">
+                <div class="director-badge">
+                    <span class="status-dot disconnected" id="connection-dot"></span>
+                    <span id="connection-text">Desconectado</span>
+                </div>
+                <div class="director-badge" style="color: var(--secondary); border-color: hsla(192, 95%, 50%, 0.3);">
+                    👥 Músicos Conectados: <span id="client-count" style="margin-left: 4px; font-weight: 800;">0</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Grid Principal -->
+        <main class="director-grid">
+            <!-- Panel Izquierdo: Vista Previa y Controles -->
+            <section class="preview-panel">
+                <div class="preview-container" id="pdf-wrapper">
+                    <canvas id="pdf-canvas"></canvas>
+                </div>
+                
+                <div class="control-bar glass">
+                    <div class="nav-buttons">
+                        <button id="btn-prev" class="btn-nav btn-prev" disabled>⏮ Anterior</button>
+                        <button id="btn-next" class="btn-nav btn-next" disabled>Siguiente ⏭</button>
+                    </div>
+                    
+                    <div class="page-controls-wrapper">
+                        <span style="font-weight: 600; color: var(--text-muted);">Página</span>
+                        <input type="number" id="page-input" class="page-control-input" value="1" min="1" disabled>
+                        <span style="color: var(--text-muted); font-weight: 600;">/ <span id="total-pages" style="color: white;">-</span></span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Panel Derecho: Gestión de Documentos y Red -->
+            <section class="sidebar-panel">
+                <!-- Sección: Partituras Disponibles -->
+                <div class="sidebar-section glass">
+                    <h3>Partituras Disponibles</h3>
+                    <ul id="doc-list" class="doc-list">
+                        <!-- Cargados dinámicamente -->
+                        <div class="spinner" style="width: 24px; height: 24px; margin: 20px auto;"></div>
+                    </ul>
+                </div>
+
+                <!-- Sección: Subir Partitura -->
+                <div class="sidebar-section glass">
+                    <h3>Subir Nueva Partitura</h3>
+                    <div id="dropzone" class="dropzone">
+                        <div class="dropzone-icon">⇪</div>
+                        <p>Arrastra tu archivo PDF aquí o <strong>haz clic para buscar</strong></p>
+                        <span>Tamaño máximo recomendado: 15MB</span>
+                        <input type="file" id="file-input" accept=".pdf" style="display: none;">
+                    </div>
+                </div>
+
+                <!-- Sección: Enlaces de Conexión Local -->
+                <div class="sidebar-section glass">
+                    <h3>Conectar Dispositivos</h3>
+                    <div class="lan-panel">
+                        <p class="instruction-text">
+                            Pídeles a los músicos que se conecten a la misma red WiFi e ingresen una de estas direcciones en el navegador de sus celulares:
+                        </p>
+                        <div class="lan-ip-list" id="lan-ip-list">
+                            <!-- IPs cargadas dinámicamente -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Cargar PDF.js localmente -->
+    <script src="js/libs/pdf.min.js"></script>
+    <!-- Cargar aplicación del director -->
+    <script src="js/director.js"></script>
+</body>
+</html>
